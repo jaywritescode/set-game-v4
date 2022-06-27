@@ -107,8 +107,30 @@ class Game:
 
         self.players[name] = list()
 
+    def handle_player_finds_set(self, cards, *, player):
+        """Given a player's selection of cards, validate that the selection makes a Set and, if valid, give that Set to the player.
+        
+        :param cards: a collection of cards
+        :param player: the player
+        :return: True iff the cards (and player) are valid
+        """
+        if not self.player_exists(player) or all(self.card_is_on_board(card) for card in cards) or is_set(cards):
+            return False
+
+        self.board = [card for card in self.board if card not in cards]
+        self.players[player].append(cards)
+
+        self.deal()
+        return True
+
     def has_set(self):
         return contains_set(self.board)
+
+    def card_is_on_board(self, card):
+        return card in self.board
+
+    def player_exists(self, player):
+        return player in self.players
 
     def is_started(self):
         return self.board
