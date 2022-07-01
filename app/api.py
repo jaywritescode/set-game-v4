@@ -25,6 +25,8 @@ class ConnectionManager:
 
 
 class GameApi(WebSocketEndpoint):
+    encoding = 'json'
+
     def __init__(self, scope, receive, send):
         super().__init__(scope, receive=receive, send=send)
 
