@@ -1,4 +1,6 @@
 from operator import itemgetter
+from marshmallow import Schema, fields
+from marshmallow_dataclass import dataclass
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
@@ -25,6 +27,12 @@ class ConnectionManager:
         return len(self.active_connections)
 
 
+MessageSchema = Schema.from_dict({
+    'action': fields.Str(),
+    'payload': fields.Dict(keys=fields.Str(), values=fields.Str())
+})
+
+
 class GameApi(WebSocketEndpoint):
     encoding = 'json'
 
@@ -49,12 +57,12 @@ class GameApi(WebSocketEndpoint):
         await websocket.send_text('Hello, world!')
 
     async def on_receive(self, websocket, data):
-        print(websocket)
-        print(data)
+        schema = MessageSchema()
+        message = schema.dump(data)
 
-        action, payload = itemgetter('type', 'payload')(data)
+        action = message['action']
         if action == 'join_game':
-            result = self.handle_join_game(**payload)
+            result = self.handle_join_game(**message['payload'])
             await websocket.send_json(result or {})
         else:
             await websocket.send_text(f'Error: {data}')

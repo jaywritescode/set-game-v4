@@ -27,6 +27,6 @@ def test_player_joins_game():
     client = TestClient(app)
     with client.websocket_connect('/ws') as websocket:
         websocket.receive_text()
-        websocket.send_json({'type': 'join_game', 'payload': {'name': 'tom'}})
+        websocket.send_json({'action': 'join_game', 'payload': {'name': 'tom'}})
         data = websocket.receive_json()
         assert_that(data).contains_entry({'tom': []})

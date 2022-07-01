@@ -8,6 +8,7 @@ license = "ISC"
 [tool.poetry.dependencies]
 python = "^3.10"
 starlette = "^0.20.3"
+marshmallow = "^3.17.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
