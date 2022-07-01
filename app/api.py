@@ -63,7 +63,7 @@ class GameApi(WebSocketEndpoint):
         action = message['action']
         if action == 'join_game':
             result = self.handle_join_game(**message['payload'])
-            await websocket.send_json(result or {})
+            await self.connections.broadcast(result or {})
         else:
             await websocket.send_text(f'Error: {data}')
 
