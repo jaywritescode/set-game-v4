@@ -1,3 +1,4 @@
+from operator import itemgetter
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
@@ -35,7 +36,6 @@ class GameApi(WebSocketEndpoint):
         if self.game is None:
             self.scope['app'].state.game = Game()
 
-
     @property
     def connections(self):
         return getattr(self.scope['app'].state, 'connections', None)
@@ -47,14 +47,33 @@ class GameApi(WebSocketEndpoint):
     async def on_connect(self, websocket):
         await self.connections.accept(websocket)
         await websocket.send_text('Hello, world!')
-        await websocket.close()
 
     async def on_receive(self, websocket, data):
-        pass
+        print(websocket)
+        print(data)
+
+        action, payload = itemgetter('type', 'payload')(data)
+        if action == 'join_game':
+            result = self.handle_join_game(**payload)
+            await websocket.send_json(result or {})
+        else:
+            await websocket.send_text(f'Error: {data}')
 
     async def on_disconnect(self, websocket, close_code):
         await super().on_disconnect(websocket, close_code)
         self.connections.disconnect(websocket)
+
+    def handle_join_game(self, **kwargs):
+        if 'name' in kwargs:
+            try:
+                self.game.add_player(kwargs['name'])
+                return self.game.players
+            except:
+                return None
+        
+        return None
+
+        
 
 
 routes = [
