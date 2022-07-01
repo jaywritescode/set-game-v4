@@ -114,7 +114,7 @@ class Game:
         :param player: the player
         :return: True iff the cards (and player) are valid
         """
-        if not self.player_exists(player) or all(self.card_is_on_board(card) for card in cards) or is_set(cards):
+        if not (self.player_exists(player) and all(self.card_is_on_board(card) for card in cards) and is_set(cards)):
             return False
 
         self.board = [card for card in self.board if card not in cards]
