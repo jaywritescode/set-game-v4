@@ -30,7 +30,7 @@ class Card:
 
 def is_set(cards):
     """Given some collection of cards, determine if they form a Set.
-    
+
     :param cards: a collection of cards
     :return: True if the cards form a Set, otherwise False.
     """
@@ -44,8 +44,7 @@ def is_set(cards):
 
 
 def complete_set(c, d):
-    """Given cards c and d, find the unique card e such that (c, d, e) is a Set.
-    """
+    """Given cards c and d, find the unique card e such that (c, d, e) is a Set."""
     number = Number(-(c.number.value + d.number.value) % 3)
     color = Color(-(c.color.value + d.color.value) % 3)
     shading = Shading(-(c.shading.value + d.shading.value) % 3)
@@ -55,7 +54,7 @@ def complete_set(c, d):
 
 def contains_set(cards):
     """Given a collection of cards, determine if any three of them form a Set.
-    
+
     :param cards: a collection of cards
     :return: True if any three cards in the collection form a Set, otherwise False
     """
@@ -109,12 +108,16 @@ class Game:
 
     def handle_player_finds_set(self, cards, *, player):
         """Given a player's selection of cards, validate that the selection makes a Set and, if valid, give that Set to the player.
-        
+
         :param cards: a collection of cards
         :param player: the player
         :return: True iff the cards (and player) are valid
         """
-        if not (self.player_exists(player) and all(self.card_is_on_board(card) for card in cards) and is_set(cards)):
+        if not (
+            self.player_exists(player)
+            and all(self.card_is_on_board(card) for card in cards)
+            and is_set(cards)
+        ):
             return False
 
         self.board = [card for card in self.board if card not in cards]
