@@ -5,7 +5,7 @@ from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 
-from app.setgame import Game
+from app.setgame import Game, GameSchema
 
 
 class ConnectionManager:
@@ -44,6 +44,8 @@ JoinGameRequestSchema = Schema.from_dict(
 class GameApi(WebSocketEndpoint):
     encoding = "json"
 
+    game_schema = GameSchema()
+
     def __init__(self, scope, receive, send):
         super().__init__(scope, receive=receive, send=send)
 
@@ -69,23 +71,39 @@ class GameApi(WebSocketEndpoint):
         message = schema.dump(data)
 
         action = message["action"]
+        
         try:        
-        if action == "join_game":
+            if action == "join_game":
                 result = self.handle_join_game(JoinGameRequestSchema().dump(message['payload']))
+            elif action == "start_game":
+                result = self.handle_start_game()
+        except KeyError as e:
+            result = { 'error': f"Missing key: {e.args[0]}" }
+        except RuntimeError as e:
+            result = { 'error': e.args[0] }
+        except ValueError as e:
+            result = { 'error': e.args[0] }
+
+        await self.connections.broadcast(result)
 
     async def on_disconnect(self, websocket, close_code):
         await super().on_disconnect(websocket, close_code)
         self.connections.disconnect(websocket)
 
     def handle_join_game(self, request):
-            try:
+        try:
             self.game.add_player(request['name'])
             # TODO: really you want to return the entire game
-                return self.game.players
+            return self.game.players
         except ValueError as e:
             raise e
 
-        return None
+    def handle_start_game(self):
+        try:
+            self.game.start()
+            return GameApi.game_schema.dump(self.game)
+        except RuntimeError as e:
+            raise e
 
 
 routes = [WebSocketRoute("/ws", GameApi)]

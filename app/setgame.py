@@ -1,8 +1,11 @@
 from collections import deque
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from enum import Enum
 from itertools import combinations, product
 import random
+from marshmallow import Schema, fields
+
+import marshmallow_dataclass
 
 
 Number = Enum("Number", "ONE TWO THREE", start=0)
@@ -26,6 +29,9 @@ class Card:
             getattr(self, field.name).value * (3**i)
             for (i, field) in enumerate(fields(Card))
         )
+
+
+CardSchema = marshmallow_dataclass.class_schema(Card)()
 
 
 def is_set(cards):
@@ -76,8 +82,8 @@ class Game:
         self.game_over = False
 
     def start(self):
-        if len(self.board):
-            return
+        if len(self.board) or self.game_over:
+            raise RuntimeError("game is already started")
 
         self.shuffle()
         self.deal()
@@ -140,3 +146,9 @@ class Game:
 
     def is_game_over(self):
         return self.game_over
+
+
+class GameSchema(Schema):
+    board = fields.List(fields.Nested(CardSchema))
+    players = fields.Dict(keys=fields.Str(), values=fields.List(fields.List(fields.Nested(CardSchema))))
+    game_over = fields.Boolean()
