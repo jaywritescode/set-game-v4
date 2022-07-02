@@ -93,8 +93,7 @@ class GameApi(WebSocketEndpoint):
     def handle_join_game(self, request):
         try:
             self.game.add_player(request['name'])
-            # TODO: really you want to return the entire game
-            return self.game.players
+            return GameApi.game_schema.dump(self.game)
         except ValueError as e:
             raise e
 
