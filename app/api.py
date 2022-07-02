@@ -34,6 +34,12 @@ MessageSchema = Schema.from_dict(
     }
 )
 
+JoinGameRequestSchema = Schema.from_dict(
+    {
+        "name": fields.Str()
+    }
+)
+
 
 class GameApi(WebSocketEndpoint):
     encoding = "json"
@@ -63,23 +69,21 @@ class GameApi(WebSocketEndpoint):
         message = schema.dump(data)
 
         action = message["action"]
+        try:        
         if action == "join_game":
-            result = self.handle_join_game(**message["payload"])
-            await self.connections.broadcast(result or {})
-        else:
-            await websocket.send_text(f"Error: {data}")
+                result = self.handle_join_game(JoinGameRequestSchema().dump(message['payload']))
 
     async def on_disconnect(self, websocket, close_code):
         await super().on_disconnect(websocket, close_code)
         self.connections.disconnect(websocket)
 
-    def handle_join_game(self, **kwargs):
-        if "name" in kwargs:
+    def handle_join_game(self, request):
             try:
-                self.game.add_player(kwargs["name"])
+            self.game.add_player(request['name'])
+            # TODO: really you want to return the entire game
                 return self.game.players
-            except:
-                return None
+        except ValueError as e:
+            raise e
 
         return None
 

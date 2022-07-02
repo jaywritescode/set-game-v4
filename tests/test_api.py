@@ -32,6 +32,15 @@ def test_player_joins_game():
         assert_that(data).contains_entry({"tom": []})
 
 
+def test_invalid_join_game_request():
+    client = TestClient(app)
+    with client.websocket_connect("/ws") as websocket:
+        websocket.receive_text()
+        websocket.send_json({"action": "join_game", "payload": {}})
+        data = websocket.receive_json()
+        assert_that(data).contains_key("error")
+
+
 def test_multiple_players_join_game():
     client = TestClient(app)
     with client.websocket_connect("/ws") as ws1, client.websocket_connect("/ws") as ws2:
@@ -48,3 +57,21 @@ def test_multiple_players_join_game():
 
         assert_that(data1).contains_entry({"tom": []}, {"jim": []})
         assert_that(data2).contains_entry({"tom": []}, {"jim": []})
+
+
+def test_same_player_joins_game_multiple_times():
+    client = TestClient(app)
+    with client.websocket_connect("/ws") as ws1, client.websocket_connect("/ws") as ws2:
+        ws1.receive_text()
+        ws2.receive_text()
+
+        ws1.send_json({"action": "join_game", "payload": {"name": "tom"}})
+        ws1.receive_json()
+        ws2.receive_json()
+
+        ws2.send_json({"action": "join_game", "payload": {"name": "tom"}})
+        data1 = ws1.receive_json()
+        data2 = ws2.receive_json()
+
+        assert_that(data1).contains_key("error")
+        assert_that(data2).contains_key("error")
