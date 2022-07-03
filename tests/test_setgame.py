@@ -117,7 +117,8 @@ def test_handle_player_finds_set_not_on_board(standard_deck):
     ]
 
     with soft_assertions():
-        assert_that(game.handle_player_finds_set(cards, player="jeff")).is_false()
+        with pytest.raises(RuntimeError):
+            game.handle_player_finds_set(cards, player="jeff") 
         assert_that(game.players["jeff"]).is_length(0)
         assert_that(game.board).is_length(12)
         assert_that(game.cards).is_length(69)
