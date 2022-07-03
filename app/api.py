@@ -79,8 +79,6 @@ class GameApi(WebSocketEndpoint):
             result = {"error": f"Missing key: {e.args[0]}"}
         except RuntimeError as e:
             result = {"error": e.args[0]}
-        except ValueError as e:
-            result = {"error": e.args[0]}
 
         await self.connections.broadcast(result)
 
@@ -92,7 +90,7 @@ class GameApi(WebSocketEndpoint):
         try:
             self.game.add_player(request["name"])
             return GameApi.game_schema.dump(self.game)
-        except ValueError as e:
+        except RuntimeError as e:
             raise e
 
     def handle_start_game(self):
