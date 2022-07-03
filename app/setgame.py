@@ -108,7 +108,7 @@ class Game:
 
     def add_player(self, name):
         if name in self.players:
-            raise ValueError(f"{name} is already playing.")
+            raise RuntimeError(f"{name} is already playing.")
 
         self.players[name] = list()
 

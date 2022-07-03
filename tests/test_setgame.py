@@ -986,7 +986,7 @@ def test_it_cant_add_the_same_player_twice():
     game = Game()
     game.add_player("jeff")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         game.add_player("jeff")
 
 
