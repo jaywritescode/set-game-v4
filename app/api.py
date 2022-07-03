@@ -1,11 +1,10 @@
-from operator import itemgetter
 from marshmallow import Schema, fields
-from marshmallow_dataclass import dataclass
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
+from app.serialize import GameSchema
 
-from app.setgame import Game, GameSchema
+from app.setgame import Game
 
 
 class ConnectionManager:
