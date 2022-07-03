@@ -146,5 +146,8 @@ class Game:
 
 class GameSchema(mm.Schema):
     board = mm.fields.List(mm.fields.Nested(Card.Schema()))
-    players = mm.fields.Dict(keys=mm.fields.Str(), values=mm.fields.List(mm.fields.List(mm.fields.Nested(Card.Schema()))))
+    players = mm.fields.Dict(
+        keys=mm.fields.Str(),
+        values=mm.fields.List(mm.fields.List(mm.fields.Nested(Card.Schema()))),
+    )
     game_over = mm.fields.Boolean()

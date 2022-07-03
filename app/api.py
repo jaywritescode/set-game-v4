@@ -34,11 +34,7 @@ MessageSchema = Schema.from_dict(
     }
 )
 
-JoinGameRequestSchema = Schema.from_dict(
-    {
-        "name": fields.Str()
-    }
-)
+JoinGameRequestSchema = Schema.from_dict({"name": fields.Str()})
 
 
 class GameApi(WebSocketEndpoint):
@@ -71,18 +67,20 @@ class GameApi(WebSocketEndpoint):
         message = schema.dump(data)
 
         action = message["action"]
-        
-        try:        
+
+        try:
             if action == "join_game":
-                result = self.handle_join_game(JoinGameRequestSchema().dump(message['payload']))
+                result = self.handle_join_game(
+                    JoinGameRequestSchema().dump(message["payload"])
+                )
             elif action == "start_game":
                 result = self.handle_start_game()
         except KeyError as e:
-            result = { 'error': f"Missing key: {e.args[0]}" }
+            result = {"error": f"Missing key: {e.args[0]}"}
         except RuntimeError as e:
-            result = { 'error': e.args[0] }
+            result = {"error": e.args[0]}
         except ValueError as e:
-            result = { 'error': e.args[0] }
+            result = {"error": e.args[0]}
 
         await self.connections.broadcast(result)
 
@@ -92,7 +90,7 @@ class GameApi(WebSocketEndpoint):
 
     def handle_join_game(self, request):
         try:
-            self.game.add_player(request['name'])
+            self.game.add_player(request["name"])
             return GameApi.game_schema.dump(self.game)
         except ValueError as e:
             raise e
