@@ -1,4 +1,4 @@
-from marshmallow import INCLUDE, Schema, fields
+from marshmallow import Schema, ValidationError, fields
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
@@ -33,7 +33,7 @@ MessageSchema = Schema.from_dict(
     }
 )
 
-JoinGameRequestSchema = Schema.from_dict({"name": fields.Str()})
+JoinGameRequestSchema = Schema.from_dict({"name": fields.Str(required=True)})
 
 
 SubmitRequestSchema = Schema.from_dict(
@@ -84,21 +84,22 @@ class GameApi(WebSocketEndpoint):
         try:
             if action == "join_game":
                 self.handle_join_game(JoinGameRequestSchema().load(message["payload"]))
-                result = ResponseSchema().dump(
-                    {"success": True, "game": GameApi.game_schema.dump(self.game)}
-                )
             elif action == "start_game":
-                result = self.handle_start_game()
+                self.handle_start_game()
             elif action == "submit":
                 result = self.handle_submit(
                     SubmitRequestSchema().load(message["payload"])
                 )
-        except KeyError as e:
-            result = {"error": f"Missing key: {e.args[0]}"}
+
+            result = ResponseSchema().dump(
+                {"success": True, "game": GameApi.game_schema.dump(self.game)}
+            )
         except RuntimeError as e:
             result = ResponseSchema().dump({"success": False, "error": e.args[0]})
-        except AttributeError as e:
-            result = {"error": e.args[0]}
+        except ValidationError as e:
+            result = ResponseSchema().dump(
+                {"success": False, "error": e}
+            )
 
         result = schema.load({"action": action, "payload": result})
         await self.connections.broadcast(result)
@@ -118,9 +119,10 @@ class GameApi(WebSocketEndpoint):
     def handle_start_game(self):
         try:
             self.game.start()
-            return GameApi.game_schema.dump(self.game)
         except RuntimeError as e:
             raise e
+
+        return True
 
     def handle_submit(self, request):
         player = request["player"]

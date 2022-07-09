@@ -30,9 +30,20 @@ def test_player_joins_game():
         websocket.send_json({"action": "join_game", "payload": {"name": "tom"}})
         data = websocket.receive_json()
 
-        assert_that(data["game_over"]).is_false()
-        assert_that(data["board"]).is_empty()
-        assert_that(data["players"]).contains_entry({"tom": []})
+        expected = {
+            "action": "join_game",
+            "payload": {
+                "success": True,
+                "game": {
+                    "players": {
+                        "tom": [],
+                    },
+                    "board": [],
+                    "game_over": False,
+                },
+            },
+        }
+        assert_that(data).is_equal_to(expected)
 
 
 def test_multiple_players_join_game():
@@ -49,13 +60,19 @@ def test_multiple_players_join_game():
         data1 = ws1.receive_json()
         data2 = ws2.receive_json()
 
-        assert_that(data1["game_over"]).is_false
-        assert_that(data1["board"]).is_empty()
-        assert_that(data1["players"]).contains_entry({"tom": []}, {"jim": []})
-
-        assert_that(data2["game_over"]).is_false
-        assert_that(data2["board"]).is_empty()
-        assert_that(data2["players"]).contains_entry({"tom": []}, {"jim": []})
+        expected = {
+            "action": "join_game",
+            "payload": {
+                "success": True,
+                "game": {
+                    "players": {"tom": [], "jim": []},
+                    "board": [],
+                    "game_over": False,
+                },
+            },
+        }
+        assert_that(data1).is_equal_to(expected)
+        assert_that(data2).is_equal_to(expected)
 
 
 def test_invalid_join_game_request():
@@ -64,7 +81,10 @@ def test_invalid_join_game_request():
         websocket.receive_text()
         websocket.send_json({"action": "join_game", "payload": {}})
         data = websocket.receive_json()
-        assert_that(data).contains_key("error")
+
+        assert_that(data["action"]).is_equal_to("join_game")
+        assert_that(data["payload"]).has_success(False)
+        assert_that(data["payload"]).contains_key("error")
 
 
 def test_same_player_joins_game_multiple_times():
@@ -81,8 +101,12 @@ def test_same_player_joins_game_multiple_times():
         data1 = ws1.receive_json()
         data2 = ws2.receive_json()
 
-        assert_that(data1).contains_key("error")
-        assert_that(data2).contains_key("error")
+        expected = {
+            "action": "join_game",
+            "payload": {"success": False, "error": "tom is already playing."},
+        }
+        assert_that(data1).is_equal_to(expected)
+        assert_that(data2).is_equal_to(expected)
 
 
 def test_start_game():
