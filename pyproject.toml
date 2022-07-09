@@ -9,6 +9,7 @@ license = "ISC"
 python = "^3.10"
 starlette = "^0.20.3"
 marshmallow = "^3.17.0"
+marshmallow-dataclass = {extras = ["enum"], version = "^8.5.8"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
