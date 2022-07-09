@@ -1,8 +1,8 @@
-from marshmallow import Schema, fields
+from marshmallow import INCLUDE, Schema, fields
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
-from app.serialize import GameSchema
+from app.serialize import CardSchema, GameSchema
 
 from app.setgame import Game
 
@@ -29,11 +29,16 @@ class ConnectionManager:
 MessageSchema = Schema.from_dict(
     {
         "action": fields.Str(),
-        "payload": fields.Dict(keys=fields.Str(), values=fields.Str()),
+        "payload": fields.Dict(keys=fields.Str()),
     }
 )
 
 JoinGameRequestSchema = Schema.from_dict({"name": fields.Str()})
+
+
+SubmitRequestSchema = Schema.from_dict(
+    {"player": fields.Str(), "cards": fields.List(fields.Nested(CardSchema))}
+)
 
 
 class GameApi(WebSocketEndpoint):
@@ -74,9 +79,15 @@ class GameApi(WebSocketEndpoint):
                 )
             elif action == "start_game":
                 result = self.handle_start_game()
+            elif action == "submit":
+                result = self.handle_submit(
+                    SubmitRequestSchema().load(message["payload"])
+                )
         except KeyError as e:
             result = {"error": f"Missing key: {e.args[0]}"}
         except RuntimeError as e:
+            result = {"error": e.args[0]}
+        except AttributeError as e:
             result = {"error": e.args[0]}
 
         await self.connections.broadcast(result)
@@ -96,6 +107,20 @@ class GameApi(WebSocketEndpoint):
         try:
             self.game.start()
             return GameApi.game_schema.dump(self.game)
+        except RuntimeError as e:
+            raise e
+
+    def handle_submit(self, request):
+        player = request["player"]
+        cards = request["cards"]
+
+        try:
+            if not self.game.player_exists(player):
+                raise RuntimeError(f"player {player} has not joined game")
+
+            result = self.game.handle_player_finds_set(cards, player=player)
+            if result:    
+                return GameApi.game_schema.dump(self.game)
         except RuntimeError as e:
             raise e
 
