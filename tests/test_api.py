@@ -123,3 +123,54 @@ def test_multiple_calls_to_start_game():
         websocket.send_json({"action": "start_game", "payload": {}})
         data = websocket.receive_json()
         assert_that(data).contains_key("error")
+
+
+def test_player_submits_valid_set(standard_deck):
+    client = TestClient(app)
+    with client.websocket_connect("/ws") as ws1, client.websocket_connect("/ws") as ws2:
+        ws1.receive_text()
+        ws2.receive_text()
+
+        # TODO: Can you just call the add_player method directly, rather than sending a request?
+        ws1.send_json({"action": "join_game", "payload": {"name": "dan"}})
+        ws1.receive_json()
+        ws2.receive_json()
+
+        ws2.send_json({"action": "join_game", "payload": {"name": "lou"}})
+        ws1.receive_json()
+        ws2.receive_json()
+
+        app.state.game.deal()
+
+        ws1.send_json(
+            {
+                "action": "submit",
+                "payload": {
+                    "player": "lou",
+                    "cards": [
+                        {
+                            "shape": "OVAL",
+                            "shading": "SOLID",
+                            "number": "THREE",
+                            "color": "GREEN",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "EMPTY",
+                            "number": "ONE",
+                            "color": "RED",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "STRIPED",
+                            "number": "TWO",
+                            "color": "BLUE",
+                        },
+                    ],
+                },
+            }
+        )
+        data1 = ws1.receive_json()
+        data2 = ws2.receive_json()
+
+        assert_that(data1).is_equal_to(data2)
