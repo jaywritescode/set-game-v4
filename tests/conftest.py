@@ -3,6 +3,7 @@ import pytest
 
 from app.setgame import Card, Color, Number, Shading, Shape
 
+
 @pytest.fixture
 def standard_deck():
     cards = [

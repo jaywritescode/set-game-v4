@@ -119,7 +119,7 @@ class GameApi(WebSocketEndpoint):
                 raise RuntimeError(f"player {player} has not joined game")
 
             result = self.game.handle_player_finds_set(cards, player=player)
-            if result:    
+            if result:
                 return GameApi.game_schema.dump(self.game)
         except RuntimeError as e:
             raise e

@@ -113,13 +113,13 @@ class Game:
         :param player: the player
         :return: True iff the cards (and player) are valid
         """
+        if not self.player_exists(player):
+            raise RuntimeError("Player has not joined game.")
+
         if not all(self.card_is_on_board(card) for card in cards):
             raise RuntimeError("Submitted cards not on board.")
 
-        if not (
-            self.player_exists(player)
-            and is_set(cards)
-        ):
+        if not is_set(cards):
             return False
 
         self.board = [card for card in self.board if card not in cards]
