@@ -41,6 +41,15 @@ SubmitRequestSchema = Schema.from_dict(
 )
 
 
+ResponseSchema = Schema.from_dict(
+    {
+        "success": fields.Boolean(),
+        "game": fields.Nested(GameSchema),
+        "error": fields.Str(),
+    }
+)
+
+
 class GameApi(WebSocketEndpoint):
     encoding = "json"
 
@@ -74,8 +83,9 @@ class GameApi(WebSocketEndpoint):
 
         try:
             if action == "join_game":
-                result = self.handle_join_game(
-                    JoinGameRequestSchema().dump(message["payload"])
+                self.handle_join_game(JoinGameRequestSchema().load(message["payload"]))
+                result = ResponseSchema().dump(
+                    {"success": True, "game": GameApi.game_schema.dump(self.game)}
                 )
             elif action == "start_game":
                 result = self.handle_start_game()
@@ -86,10 +96,11 @@ class GameApi(WebSocketEndpoint):
         except KeyError as e:
             result = {"error": f"Missing key: {e.args[0]}"}
         except RuntimeError as e:
-            result = {"error": e.args[0]}
+            result = ResponseSchema().dump({"success": False, "error": e.args[0]})
         except AttributeError as e:
             result = {"error": e.args[0]}
 
+        result = schema.load({"action": action, "payload": result})
         await self.connections.broadcast(result)
 
     async def on_disconnect(self, websocket, close_code):
@@ -99,9 +110,10 @@ class GameApi(WebSocketEndpoint):
     def handle_join_game(self, request):
         try:
             self.game.add_player(request["name"])
-            return GameApi.game_schema.dump(self.game)
         except RuntimeError as e:
             raise e
+
+        return True
 
     def handle_start_game(self):
         try:
