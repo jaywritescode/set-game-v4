@@ -91,15 +91,11 @@ class GameApi(WebSocketEndpoint):
                     SubmitRequestSchema().load(message["payload"])
                 )
 
-            result = ResponseSchema().dump(
-                {"success": True, "game": GameApi.game_schema.dump(self.game)}
-            )
+            result = ResponseSchema().dump({"success": True, "game": self.game})
         except RuntimeError as e:
             result = ResponseSchema().dump({"success": False, "error": e.args[0]})
         except ValidationError as e:
-            result = ResponseSchema().dump(
-                {"success": False, "error": e}
-            )
+            result = ResponseSchema().dump({"success": False, "error": e})
 
         result = schema.load({"action": action, "payload": result})
         await self.connections.broadcast(result)

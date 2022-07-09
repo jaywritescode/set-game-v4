@@ -115,25 +115,21 @@ def test_start_game():
         ws1.receive_text()
         ws2.receive_text()
 
-        ws1.send_json({"action": "join_game", "payload": {"name": "tim"}})
-        ws1.receive_json()
-        ws2.receive_json()
-
-        ws2.send_json({"action": "join_game", "payload": {"name": "joe"}})
-        ws1.receive_json()
-        ws2.receive_json()
+        app.state.game.add_player("tim")
+        app.state.game.add_player("joe")
 
         ws1.send_json({"action": "start_game", "payload": {}})
         data1 = ws1.receive_json()
         data2 = ws2.receive_json()
 
-        assert_that(data1["game_over"]).is_false
-        assert_that(data1["board"]).is_length(12)
-        assert_that(data1["players"]).contains_entry({"tim": []}, {"joe": []})
+        assert_that(data1).is_equal_to(data2)
 
-        assert_that(data2["game_over"]).is_false
-        assert_that(data2["board"]).is_length(12)
-        assert_that(data2["players"]).contains_entry({"tim": []}, {"joe": []})
+        assert_that(data1).has_action("start_game")
+        assert_that(data1["payload"]["success"]).is_true()
+        assert_that(data1["payload"]["game"]["board"]).is_length(12)
+        assert_that(data1["payload"]["game"]["players"]).contains_entry(
+            {"tim": []}, {"joe": []}
+        )
 
 
 def test_multiple_calls_to_start_game():
@@ -146,7 +142,10 @@ def test_multiple_calls_to_start_game():
 
         websocket.send_json({"action": "start_game", "payload": {}})
         data = websocket.receive_json()
-        assert_that(data).contains_key("error")
+
+        assert_that(data).has_action("start_game")
+        assert_that(data["payload"]).has_success(False)
+        assert_that(data["payload"]).contains_key("error")
 
 
 def test_player_submits_valid_set(standard_deck):
