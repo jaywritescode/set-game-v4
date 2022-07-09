@@ -154,15 +154,10 @@ def test_player_submits_valid_set(standard_deck):
         ws1.receive_text()
         ws2.receive_text()
 
-        # TODO: Can you just call the add_player method directly, rather than sending a request?
-        ws1.send_json({"action": "join_game", "payload": {"name": "dan"}})
-        ws1.receive_json()
-        ws2.receive_json()
+        app.state.game.add_player("dan")
+        app.state.game.add_player("lou")
 
-        ws2.send_json({"action": "join_game", "payload": {"name": "lou"}})
-        ws1.receive_json()
-        ws2.receive_json()
-
+        app.state.game.cards = standard_deck
         app.state.game.deal()
 
         ws1.send_json(
@@ -196,4 +191,114 @@ def test_player_submits_valid_set(standard_deck):
         data1 = ws1.receive_json()
         data2 = ws2.receive_json()
 
-        assert_that(data1).is_equal_to(data2)
+        expected = {
+            "action": "submit",
+            "payload": {
+                "success": True,
+                "game": {
+                    "players": {
+                        "dan": [],
+                        "lou": [
+                            [
+                                {
+                                    "shape": "OVAL",
+                                    "shading": "SOLID",
+                                    "color": "GREEN",
+                                    "number": "THREE",
+                                },
+                                {
+                                    "shape": "SQUIGGLE",
+                                    "shading": "EMPTY",
+                                    "color": "RED",
+                                    "number": "ONE",
+                                },
+                                {
+                                    "shape": "DIAMOND",
+                                    "shading": "STRIPED",
+                                    "color": "BLUE",
+                                    "number": "TWO",
+                                },
+                            ]
+                        ],
+                    },
+                    "game_over": False,
+                    "board": [
+                        {
+                            "shape": "OVAL",
+                            "shading": "EMPTY",
+                            "color": "RED",
+                            "number": "THREE",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "SOLID",
+                            "color": "GREEN",
+                            "number": "TWO",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "SOLID",
+                            "color": "GREEN",
+                            "number": "TWO",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "SOLID",
+                            "color": "RED",
+                            "number": "ONE",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "EMPTY",
+                            "color": "GREEN",
+                            "number": "ONE",
+                        },
+                        {
+                            "shape": "OVAL",
+                            "shading": "EMPTY",
+                            "color": "GREEN",
+                            "number": "TWO",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "SOLID",
+                            "color": "BLUE",
+                            "number": "ONE",
+                        },
+                        {
+                            "shape": "OVAL",
+                            "shading": "SOLID",
+                            "color": "RED",
+                            "number": "THREE",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "SOLID",
+                            "color": "RED",
+                            "number": "ONE",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "EMPTY",
+                            "color": "BLUE",
+                            "number": "ONE",
+                        },
+                        {
+                            "shape": "SQUIGGLE",
+                            "shading": "STRIPED",
+                            "color": "GREEN",
+                            "number": "TWO",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "STRIPED",
+                            "color": "GREEN",
+                            "number": "TWO",
+                        },
+                    ],
+                },
+            },
+        }
+
+        assert_that(data1).is_equal_to(expected)
+        assert_that(data2).is_equal_to(expected)
