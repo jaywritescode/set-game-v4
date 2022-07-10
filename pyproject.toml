@@ -6,7 +6,7 @@ authors = ["Jay Harris <jaywritescode@users.noreply.github.com>"]
 license = "ISC"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "3.10.3"
 starlette = "^0.20.3"
 marshmallow = "^3.17.0"
 marshmallow-dataclass = {extras = ["enum"], version = "^8.5.8"}
