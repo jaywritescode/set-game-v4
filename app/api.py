@@ -73,7 +73,6 @@ class GameApi(WebSocketEndpoint):
 
     async def on_connect(self, websocket):
         await self.connections.accept(websocket)
-        await websocket.send_text("Hello, world!")
 
     async def on_receive(self, websocket, data):
         schema = MessageSchema()
