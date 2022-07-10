@@ -28,7 +28,7 @@ class ConnectionManager:
 
 MessageSchema = Schema.from_dict(
     {
-        "action": fields.Str(),
+        "action": fields.Str(),  # TODO: validate that this only takes on "join_game", "start_game", "submit"
         "payload": fields.Dict(keys=fields.Str()),
     }
 )
@@ -83,17 +83,15 @@ class GameApi(WebSocketEndpoint):
 
         try:
             if action == "join_game":
-                self.handle_join_game(JoinGameRequestSchema().load(message["payload"]))
+                result = self.handle_join_game(
+                    JoinGameRequestSchema().load(message["payload"])
+                )
             elif action == "start_game":
-                self.handle_start_game()
+                result = self.handle_start_game()
             elif action == "submit":
                 result = self.handle_submit(
                     SubmitRequestSchema().load(message["payload"])
                 )
-
-            result = ResponseSchema().dump({"success": True, "game": self.game})
-        except RuntimeError as e:
-            result = ResponseSchema().dump({"success": False, "error": e.args[0]})
         except ValidationError as e:
             result = ResponseSchema().dump({"success": False, "error": e})
 
@@ -104,22 +102,35 @@ class GameApi(WebSocketEndpoint):
         await super().on_disconnect(websocket, close_code)
         self.connections.disconnect(websocket)
 
+    #############################################
+    # join game
+    #############################################
     def handle_join_game(self, request):
-        try:
-            self.game.add_player(request["name"])
-        except RuntimeError as e:
-            raise e
+        """Handles a request to join the game.
 
-        return True
+        :param request: the request
+        :returns json: an outgoing message with the result
+        """
+        # TODO: don't assume that two players won't have the same name
+        self.add_player(request["name"])
+        return ResponseSchema().dump({"success": True, "game": self.game})
 
+    def add_player(self, name):
+        self.game.add_player(name)
+
+    #############################################
+    # start game
+    #############################################
     def handle_start_game(self):
         try:
             self.game.start()
+            return ResponseSchema().dump({"success": True, "game": self.game})
         except RuntimeError as e:
-            raise e
+            return ResponseSchema().dump({"success": False, "error": e})
 
-        return True
-
+    #############################################
+    # submit
+    #############################################
     def handle_submit(self, request):
         player = request["player"]
         cards = request["cards"]
@@ -128,11 +139,21 @@ class GameApi(WebSocketEndpoint):
             if not self.game.player_exists(player):
                 raise RuntimeError(f"player {player} has not joined game")
 
-            result = self.game.handle_player_finds_set(cards, player=player)
-            if result:
-                return GameApi.game_schema.dump(self.game)
+            if self.submit(cards, player):
+                return ResponseSchema().dump({"success": True, "game": self.game})
+            else:
+                return ResponseSchema().dump(
+                    {
+                        "success": False,
+                        "game": self.game,
+                        "error": f"Not a set: {cards}",
+                    }
+                )
         except RuntimeError as e:
-            raise e
+            return ResponseSchema().dump({"success": False, "error": e})
+
+    def submit(self, cards, player):
+        return self.game.handle_player_finds_set(cards, player=player)
 
 
 routes = [WebSocketRoute("/ws", GameApi)]

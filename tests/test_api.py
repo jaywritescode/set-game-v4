@@ -1,4 +1,5 @@
 from assertpy import assert_that
+import pytest
 from starlette.testclient import TestClient
 
 from app.api import app
@@ -87,6 +88,7 @@ def test_invalid_join_game_request():
         assert_that(data["payload"]).contains_key("error")
 
 
+@pytest.mark.skip
 def test_same_player_joins_game_multiple_times():
     client = TestClient(app)
     with client.websocket_connect("/ws") as ws1, client.websocket_connect("/ws") as ws2:
@@ -302,3 +304,48 @@ def test_player_submits_valid_set(standard_deck):
 
         assert_that(data1).is_equal_to(expected)
         assert_that(data2).is_equal_to(expected)
+
+
+def test_player_submits_not_a_set(standard_deck):
+    client = TestClient(app)
+    with client.websocket_connect("/ws") as websocket:
+        websocket.receive_text()
+
+        app.state.game.add_player("fred")
+
+        app.state.game.cards = standard_deck
+        app.state.game.deal()
+
+        websocket.send_json(
+            {
+                "action": "submit",
+                "payload": {
+                    "player": "fred",
+                    "cards": [
+                        {
+                            "shape": "OVAL",
+                            "shading": "SOLID",
+                            "number": "THREE",
+                            "color": "GREEN",
+                        },
+                        {
+                            "shape": "OVAL",
+                            "shading": "EMPTY",
+                            "number": "THREE",
+                            "color": "RED",
+                        },
+                        {
+                            "shape": "DIAMOND",
+                            "shading": "STRIPED",
+                            "number": "TWO",
+                            "color": "BLUE",
+                        },
+                    ],
+                },
+            }
+        )
+        data = websocket.receive_json()
+
+        assert_that(data['payload']['success']).is_false()
+        assert_that(data['payload']).contains_key('error')
+        assert_that(data['payload']).contains_key('game')

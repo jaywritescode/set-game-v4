@@ -101,9 +101,7 @@ class Game:
         return True
 
     def add_player(self, name):
-        if name in self.players:
-            raise RuntimeError(f"{name} is already playing.")
-
+        # TODO: allow multiple players with the same name
         self.players[name] = list()
 
     def handle_player_finds_set(self, cards, *, player):
@@ -114,6 +112,7 @@ class Game:
         :return: True iff the cards (and player) are valid
         """
         if not self.player_exists(player):
+            # TODO: raise runtime error w/o message, should be handled by caller
             raise RuntimeError("Player has not joined game.")
 
         if not all(self.card_is_on_board(card) for card in cards):
