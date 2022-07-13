@@ -1,10 +1,12 @@
-import { useReducer } from "react";
+import { useEffect } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
+import generate from "project-name-generator";
 import logo from './logo.svg';
 import './App.css';
-import WaitingToStart from "./components/WaitingToStart";
 
 const socketUrl = "ws://localhost:3001/ws";
+
+const playerName = generate().dashed;
 
 function App() {
   const { sendJsonMessage, readyState } = useWebsocket(socketUrl, {
@@ -15,6 +17,19 @@ function App() {
       console.log('[useWebsocket:onMessage]', e);
     }
   });
+
+  useEffect(function connectionEstablished() {
+    if (readyState !== ReadyState.OPEN) {
+      console.log("[connectionEstablished] connection is in state ", readyState);
+      return;
+    }
+
+    console.log("[connectionEstablished] connection is open");
+    sendJsonMessage({
+      action: "join_game",
+      payload: { name: playerName }
+    });
+  }, [readyState, sendJsonMessage]);
 
   return (
     <div className="App">
