@@ -1,7 +1,21 @@
+import { useReducer } from "react";
+import useWebsocket, { ReadyState } from "react-use-websocket";
 import logo from './logo.svg';
 import './App.css';
+import WaitingToStart from "./components/WaitingToStart";
+
+const socketUrl = "ws://localhost:3001/ws";
 
 function App() {
+  const { sendJsonMessage, readyState } = useWebsocket(socketUrl, {
+    onOpen: (e) => {
+      console.log('[useWebsocket:onOpen] ', e);
+    },
+    onMessage: (e) => {
+      console.log('[useWebsocket:onMessage]', e);
+    }
+  });
+
   return (
     <div className="App">
       <header className="App-header">
