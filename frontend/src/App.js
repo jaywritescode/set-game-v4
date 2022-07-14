@@ -16,7 +16,36 @@ const socketUrl = "ws://localhost:3001/ws";
 
 const playerName = generate().dashed;
 
-const reducer = (state, action) => state;
+const reducer = (state, { action, payload }) => {
+  switch (action) {
+    case JOIN_GAME: {
+      return handleJoinGame(state, payload)
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+const handleJoinGame = (state, { success, game, error }) => {
+  if (success) {
+    return {
+      ...state,
+      board: game.board,
+      players: game.players,
+      game_state: getGameState(game),
+    }
+  }
+
+  return state;
+}
+
+function getGameState(game) {
+  if (game.game_over) {
+    return GameStates.GAME_OVER;
+  }
+  return game.board.length ? GameStates.IN_PROGRESS : GameStates.WAITING_TO_START;
+}
 
 
 function App() {
@@ -32,6 +61,7 @@ function App() {
     },
     onMessage: (e) => {
       console.log('[useWebsocket:onMessage]', e);
+      dispatch(JSON.parse(e.data));
     }
   });
 
