@@ -3,6 +3,7 @@ import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import logo from './logo.svg';
 import './App.css';
+import Players from "./components/Players";
 
 const GameStates = Object.freeze({
   WAITING_TO_START: 0,
@@ -82,6 +83,11 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+
+        <Players players={state.players} myself={playerName} />
+
+
+
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
