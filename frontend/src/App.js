@@ -4,6 +4,7 @@ import generate from "project-name-generator";
 import logo from './logo.svg';
 import './App.css';
 
+const JOIN_GAME = 'join_game';
 const socketUrl = "ws://localhost:3001/ws";
 
 const playerName = generate().dashed;
@@ -26,7 +27,7 @@ function App() {
 
     console.log("[connectionEstablished] connection is open");
     sendJsonMessage({
-      action: "join_game",
+      action: JOIN_GAME,
       payload: { name: playerName }
     });
   }, [readyState, sendJsonMessage]);
