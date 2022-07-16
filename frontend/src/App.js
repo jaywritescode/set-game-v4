@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
-import _ from "lodash";
+import * as R from "ramda";
 import logo from './logo.svg';
 import './App.css';
 import Players from "./components/Players";
