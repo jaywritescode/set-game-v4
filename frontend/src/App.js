@@ -2,7 +2,6 @@ import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
-import logo from "./logo.svg";
 import "./App.css";
 import Players from "./components/Players";
 import WaitingToStart from "./components/WaitingToStart";
@@ -107,7 +106,6 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
 
         <Players players={state.players} myself={playerName} />
 
@@ -125,18 +123,6 @@ function App() {
         {state.gameState === GameStates.IN_PROGRESS && "in progress"}
 
         {state.gameState === GameStates.GAME_OVER && "game over"}
-
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
       </header>
     </div>
   );
