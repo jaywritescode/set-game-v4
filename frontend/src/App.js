@@ -22,7 +22,8 @@ const playerName = generate().dashed;
 
 const reducer = (state, { action, payload }) => {
   switch (action) {
-    case JOIN_GAME: {
+    case JOIN_GAME: 
+    case START_GAME: {
       return handleJoinGame(state, payload);
     }
     default: {
@@ -110,7 +111,20 @@ function App() {
 
         <Players players={state.players} myself={playerName} />
 
+        {state.gameState === GameStates.WAITING_TO_START && (
+          <WaitingToStart
+            onClickStart={() =>
+              sendJsonMessage({
+                action: START_GAME,
+                payload: {},
+              })
+            }
+          />
+        )}
 
+        {state.gameState === GameStates.IN_PROGRESS && "in progress"}
+
+        {state.gameState === GameStates.GAME_OVER && "game over"}
 
         <p>
           Edit <code>src/App.js</code> and save to reload.
