@@ -30,20 +30,16 @@ const reducer = (state, { action, payload }) => {
 };
 
 const handleJoinGame = (state, { success, game, error }) => {
-  if (success) {
-    return Object.assign({...state}, {
-      board: game.board,
-      players: game.players
-    }, {
-      gameState: _.cond([
-        [_.identity(game.game_over), _.constant(GameStates.GAME_OVER)],
-        [_.isEmpty(game.board),      _.constant(GameStates.WAITING_TO_START)],
-        [_.stubTrue,                 _.constant(GameStates.IN_PROGRESS)]
-      ])
-    })
-  }
-
-  return state;
+  return Object.assign({...state}, {
+    board: game.board,
+    players: game.players
+  }, {
+    gameState: _.cond([
+      [_.identity(game.game_over), _.constant(GameStates.GAME_OVER)],
+      [_.isEmpty(game.board),      _.constant(GameStates.WAITING_TO_START)],
+      [_.stubTrue,                 _.constant(GameStates.IN_PROGRESS)]
+    ])
+  })
 }
 
 

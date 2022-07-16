@@ -6,6 +6,7 @@ from app.serialize import CardSchema, GameSchema
 
 from app.setgame import Game
 
+MAX_PLAYERS = 4
 
 class ConnectionManager:
     def __init__(self):
@@ -110,6 +111,9 @@ class GameApi(WebSocketEndpoint):
         :param request: the request
         :returns json: an outgoing message with the result
         """
+        if len(self.game.players) >= MAX_PLAYERS:
+            return ResponseSchema().dump({"success": False, "game": self.game, "error": "too many players"})
+
         # TODO: don't assume that two players won't have the same name
         self.add_player(request["name"])
         return ResponseSchema().dump({"success": True, "game": self.game})
