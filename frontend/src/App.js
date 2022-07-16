@@ -1,6 +1,7 @@
 import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
+import _ from "lodash";
 import logo from './logo.svg';
 import './App.css';
 import Players from "./components/Players";
@@ -30,22 +31,19 @@ const reducer = (state, { action, payload }) => {
 
 const handleJoinGame = (state, { success, game, error }) => {
   if (success) {
-    return {
-      ...state,
+    return Object.assign({...state}, {
       board: game.board,
-      players: game.players,
-      game_state: getGameState(game),
-    }
+      players: game.players
+    }, {
+      gameState: _.cond([
+        [_.identity(game.game_over), _.constant(GameStates.GAME_OVER)],
+        [_.isEmpty(game.board),      _.constant(GameStates.WAITING_TO_START)],
+        [_.stubTrue,                 _.constant(GameStates.IN_PROGRESS)]
+      ])
+    })
   }
 
   return state;
-}
-
-function getGameState(game) {
-  if (game.game_over) {
-    return GameStates.GAME_OVER;
-  }
-  return game.board.length ? GameStates.IN_PROGRESS : GameStates.WAITING_TO_START;
 }
 
 
@@ -53,7 +51,7 @@ function App() {
   const [state, dispatch] = useReducer(reducer, {
     board: [],
     players: [],
-    game_state: GameStates.WAITING_TO_START,
+    gameState: GameStates.WAITING_TO_START,
   });
 
   const { sendJsonMessage, readyState } = useWebsocket(socketUrl, {
