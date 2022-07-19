@@ -3,8 +3,10 @@ import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
 import "./App.css";
+
 import Players from "./components/Players";
 import WaitingToStart from "./components/WaitingToStart";
+import Board from "./components/Board";
 
 const GameStates = Object.freeze({
   WAITING_TO_START: 0,
@@ -120,7 +122,7 @@ function App() {
           />
         )}
 
-        {state.gameState === GameStates.IN_PROGRESS && "in progress"}
+        {state.gameState === GameStates.IN_PROGRESS && <Board cards={state.board} />}
 
         {state.gameState === GameStates.GAME_OVER && "game over"}
       </header>
