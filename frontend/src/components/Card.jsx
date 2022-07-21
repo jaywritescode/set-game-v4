@@ -4,9 +4,7 @@ import * as R from "ramda";
 export default function Card(props) {
   const { color, number, shading, shape } = props;
 
-  const imageName = [number, color, shading, shape].map(R.toLower).join('-');
+  const imageName = [number, color, shading, shape].map(R.toLower).join("-");
 
-  return (
-    <div style={{backgroundImage: `url(/cards/${imageName}.png)`}} />
-  )
+  return <div style={{ backgroundImage: `url(/cards/${imageName}.png)` }} />;
 }

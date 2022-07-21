@@ -9,9 +9,11 @@ export default function Players(props) {
       <h2 className={styles.header}>Players</h2>
       <div className={styles.playerList}>
         {Object.entries(players).map(([playerName, setsFound]) => (
-          <li key={playerName}>{playerName}: {setsFound.length}</li>
+          <li key={playerName}>
+            {playerName}: {setsFound.length}
+          </li>
         ))}
       </div>
     </div>
-  )
+  );
 }

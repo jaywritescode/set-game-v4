@@ -23,7 +23,7 @@ const playerName = generate().dashed;
 
 const reducer = (state, { action, payload }) => {
   switch (action) {
-    case JOIN_GAME: 
+    case JOIN_GAME:
     case START_GAME: {
       return handleJoinGame(state, payload);
     }
@@ -108,7 +108,6 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
-
         <Players players={state.players} myself={playerName} />
 
         {state.gameState === GameStates.WAITING_TO_START && (
@@ -122,7 +121,9 @@ function App() {
           />
         )}
 
-        {state.gameState === GameStates.IN_PROGRESS && <Board cards={state.board} />}
+        {state.gameState === GameStates.IN_PROGRESS && (
+          <Board cards={state.board} />
+        )}
 
         {state.gameState === GameStates.GAME_OVER && "game over"}
       </main>

@@ -1,0 +1,31 @@
+.container {
+  display: grid;
+  grid-template-columns: 7rem auto;
+  grid-template-rows: 76px;
+  /* height: 76px; */
+}
+
+.header {
+  grid-column: 1;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  row-gap: 15px;
+  height: 100%;
+  font-size: 0.75rem;
+  margin: 5px 0;
+}
+
+.playerList li {
+  list-style: none;
+  text-align: left;
+  width: 50%;
+}

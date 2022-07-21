@@ -7,13 +7,15 @@ export default function Board(props) {
 
   return (
     <>
-      {splitEvery(3, cards).map(triplet => (
+      {splitEvery(3, cards).map((triplet) => (
         <ul>
-          {triplet.map(card => (<li>
-            <Card {...card} />
-          </li>))}
+          {triplet.map((card) => (
+            <li>
+              <Card {...card} />
+            </li>
+          ))}
         </ul>
       ))}
     </>
-  )
+  );
 }
