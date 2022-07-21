@@ -107,7 +107,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <main className="App-main">
 
         <Players players={state.players} myself={playerName} />
 
@@ -125,7 +125,7 @@ function App() {
         {state.gameState === GameStates.IN_PROGRESS && <Board cards={state.board} />}
 
         {state.gameState === GameStates.GAME_OVER && "game over"}
-      </header>
+      </main>
     </div>
   );
 }
