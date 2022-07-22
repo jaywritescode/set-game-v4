@@ -2,11 +2,10 @@ import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
+import logo from "./logo.svg";
 import "./App.css";
-
 import Players from "./components/Players";
 import WaitingToStart from "./components/WaitingToStart";
-import Board from "./components/Board";
 
 const GameStates = Object.freeze({
   WAITING_TO_START: 0,
@@ -23,8 +22,7 @@ const playerName = generate().dashed;
 
 const reducer = (state, { action, payload }) => {
   switch (action) {
-    case JOIN_GAME:
-    case START_GAME: {
+    case JOIN_GAME: {
       return handleJoinGame(state, payload);
     }
     default: {
@@ -34,20 +32,6 @@ const reducer = (state, { action, payload }) => {
 };
 
 const handleJoinGame = (state, { success, game, error }) => {
-<<<<<<< HEAD
-  return Object.assign({...state}, {
-    board: game.board,
-    players: game.players
-  }, {
-    gameState: _.cond([
-      [_.identity(game.game_over), _.constant(GameStates.GAME_OVER)],
-      [_.isEmpty(game.board),      _.constant(GameStates.WAITING_TO_START)],
-      [_.stubTrue,                 _.constant(GameStates.IN_PROGRESS)]
-    ])
-  })
-}
-
-=======
   if (success) {
     return Object.assign(
       { ...state },
@@ -67,7 +51,6 @@ const handleJoinGame = (state, { success, game, error }) => {
 
   return state;
 };
->>>>>>> 8e37811 (prettier)
 
 function App() {
   const [state, dispatch] = useReducer(reducer, {
@@ -109,23 +92,6 @@ function App() {
     <div className="App">
       <main className="App-main">
         <Players players={state.players} myself={playerName} />
-
-        {state.gameState === GameStates.WAITING_TO_START && (
-          <WaitingToStart
-            onClickStart={() =>
-              sendJsonMessage({
-                action: START_GAME,
-                payload: {},
-              })
-            }
-          />
-        )}
-
-        {state.gameState === GameStates.IN_PROGRESS && (
-          <Board cards={state.board} />
-        )}
-
-        {state.gameState === GameStates.GAME_OVER && "game over"}
       </main>
     </div>
   );
