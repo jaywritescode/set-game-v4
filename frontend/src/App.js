@@ -2,10 +2,8 @@ import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
-import logo from "./logo.svg";
 import "./App.css";
 import Players from "./components/Players";
-import WaitingToStart from "./components/WaitingToStart";
 
 const GameStates = Object.freeze({
   WAITING_TO_START: 0,
@@ -14,7 +12,6 @@ const GameStates = Object.freeze({
 });
 
 const JOIN_GAME = "join_game";
-const START_GAME = "start_game";
 
 const socketUrl = "ws://localhost:3001/ws";
 
