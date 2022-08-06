@@ -89,6 +89,7 @@ function App() {
     <div className="App">
       <main className="App-main">
         <Players players={state.players} myself={playerName} />
+        {state.gameState === GameStates.WAITING_TO_START && <button>start game</button> }
       </main>
     </div>
   );
