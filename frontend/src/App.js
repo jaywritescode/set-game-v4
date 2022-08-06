@@ -12,6 +12,7 @@ const GameStates = Object.freeze({
 });
 
 const JOIN_GAME = "join_game";
+const START_GAME = "start_game";
 
 const socketUrl = "ws://localhost:3001/ws";
 
@@ -21,6 +22,9 @@ const reducer = (state, { action, payload }) => {
   switch (action) {
     case JOIN_GAME: {
       return handleJoinGame(state, payload);
+    }
+    case START_GAME: {
+      return handleStartGame(state, payload);
     }
     default: {
       return state;
@@ -42,6 +46,21 @@ const handleJoinGame = (state, { success, game, error }) => {
           [() => R.isEmpty(game.board), R.always(GameStates.WAITING_TO_START)],
           [R.T, R.always(GameStates.IN_PROGRESS)],
         ])(),
+      }
+    );
+  }
+
+  return state;
+};
+
+const handleStartGame = (state, { success, game, error }) => {
+  if (success) {
+    return Object.assign(
+      { ...state },
+      {
+        board: game.board,
+        players: game.players,
+        gameState: GameStates.IN_PROGRESS,
       }
     );
   }
@@ -85,11 +104,21 @@ function App() {
     [readyState, sendJsonMessage]
   );
 
+  const onClickStartGame = () => {
+    sendJsonMessage({
+      action: START_GAME,
+      payload: {},
+    });
+  };
+
   return (
     <div className="App">
       <main className="App-main">
         <Players players={state.players} myself={playerName} />
-        {state.gameState === GameStates.WAITING_TO_START && <button>start game</button> }
+
+        {state.gameState === GameStates.WAITING_TO_START && (
+          <button onClick={onClickStartGame}>start game</button>
+        )}
       </main>
     </div>
   );
