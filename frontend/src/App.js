@@ -1,14 +1,16 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useState } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
 import "./App.css";
 import Players from "./components/Players";
+import Board from "./components/Board";
 
 const GameStates = Object.freeze({
-  WAITING_TO_START: 0,
-  IN_PROGRESS: 1,
-  GAME_OVER: 2,
+  WAITING_TO_CONNECT: 0,
+  WAITING_TO_START: 1,
+  IN_PROGRESS: 2,
+  GAME_OVER: 3,
 });
 
 const JOIN_GAME = "join_game";
@@ -18,72 +20,77 @@ const socketUrl = "ws://localhost:3001/ws";
 
 const playerName = generate().dashed;
 
-const reducer = (state, { action, payload }) => {
-  switch (action) {
-    case JOIN_GAME: {
-      return handleJoinGame(state, payload);
-    }
-    case START_GAME: {
-      return handleStartGame(state, payload);
-    }
-    default: {
-      return state;
-    }
-  }
-};
+function App() {
+  const [state, setState] = useState({
+    board: [],
+    players: [],
+    gameState: GameStates.WAITING_TO_CONNECT,
+  });
 
-const handleJoinGame = (state, { success, game, error }) => {
-  if (success) {
-    return Object.assign(
-      { ...state },
-      {
-        board: game.board,
-        players: game.players,
-      },
-      {
-        gameState: R.cond([
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebsocket(socketUrl, {
+    onOpen: () => {
+      console.log("[useWebsocket:onOpen]")
+    },
+    onMessage: () => {
+      console.log("[useWebsocket:onMessage]");
+    }
+  })
+
+  useEffect(
+    function messageReceived() {
+
+      const handleIncomingMessage = (message) => {
+        switch (message.action) {
+          case JOIN_GAME:
+            handleJoinGame(message.payload);
+            break;
+          case START_GAME:
+            handleStartGame(message.payload);
+            break;
+          default:
+            console.log(message.payload);
+        }
+      }
+
+      const handleJoinGame = ({ success, game, error }) => {
+        const gameState = R.cond([
           [R.always(game.game_over), R.always(GameStates.GAME_OVER)],
           [() => R.isEmpty(game.board), R.always(GameStates.WAITING_TO_START)],
           [R.T, R.always(GameStates.IN_PROGRESS)],
-        ])(),
+        ])();
+
+        if (success) {
+          setState({
+            ...game,
+            gameState,
+          });
+        } else {
+          console.error(error);
+        }
       }
-    );
-  }
 
-  return state;
-};
-
-const handleStartGame = (state, { success, game, error }) => {
-  if (success) {
-    return Object.assign(
-      { ...state },
-      {
-        board: game.board,
-        players: game.players,
-        gameState: GameStates.IN_PROGRESS,
+      const handleStartGame = ({ success, game, error }) => {
+        if (success) {
+          setState({
+            ...game,
+            gameState: GameStates.IN_PROGRESS
+          });
+        } else {
+          console.error(error);
+        }
       }
-    );
-  }
 
-  return state;
-};
 
-function App() {
-  const [state, dispatch] = useReducer(reducer, {
-    board: [],
-    players: [],
-    gameState: GameStates.WAITING_TO_START,
-  });
 
-  const { sendJsonMessage, readyState } = useWebsocket(socketUrl, {
-    onOpen: (e) => {
-      console.log("[useWebsocket:onOpen] ", e);
+      console.group('messageReceived');
+      if (lastJsonMessage !== null) {
+        console.log(lastJsonMessage);
+        handleIncomingMessage(lastJsonMessage);
+      }
+      console.groupEnd();
     },
-    onMessage: (e) => {
-      console.log("[useWebsocket:onMessage]", e);
-      dispatch(JSON.parse(e.data));
-    },
-  });
+    [lastJsonMessage]
+  );
 
   useEffect(
     function connectionEstablished() {
@@ -118,6 +125,9 @@ function App() {
 
         {state.gameState === GameStates.WAITING_TO_START && (
           <button onClick={onClickStartGame}>start game</button>
+        )}
+        {state.gameState === GameStates.IN_PROGRESS && (
+          <Board cards={state.board} />
         )}
       </main>
     </div>
