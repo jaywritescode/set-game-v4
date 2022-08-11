@@ -1,0 +1,8 @@
+.container {
+    flex-basis: 100%;
+    overflow: hidden;
+}
+
+.row {
+    height: 14%;
+}
