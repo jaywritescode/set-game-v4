@@ -1,8 +1,11 @@
 .container {
-    flex-basis: 100%;
-    overflow: hidden;
+  flex-basis: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(7, 1fr);
 }
 
 .row {
-    height: 14%;
+  height: 14%;
 }
