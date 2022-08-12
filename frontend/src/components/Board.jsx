@@ -20,7 +20,7 @@ export default function Board(props) {
   const { cards } = props;
 
   const onCardClicked = (card) => {
-    console.log('onCardClicked: ', card);
+    console.log("onCardClicked: ", card);
 
     const type = state.find(R.equals(card)) ? "deselectCard" : "selectCard";
     dispatch({ type, payload: card });
@@ -29,7 +29,12 @@ export default function Board(props) {
   return (
     <div className={styles.container}>
       {cards.map((card) => (
-        <Card {...card} onClick={() => onCardClicked(card)} key={`${card.number}-${card.color}-${card.shading}-${card.shape}`} />
+        <Card
+          {...card}
+          onClick={() => onCardClicked(card)}
+          key={`${card.number}-${card.color}-${card.shading}-${card.shape}`}
+          selected={state.find(R.equals(card)) !== undefined}
+        />
       ))}
     </div>
   );
