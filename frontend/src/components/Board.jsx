@@ -1,29 +1,17 @@
-import React, { useReducer } from "react";
+import React from "react";
 import Card from "./Card";
 import styles from "./Board.module.css";
 import * as R from "ramda";
 
-function reducer(state, action) {
-  switch (action.type) {
-    case "deselectCard":
-      return R.without([action.payload], state);
-    case "selectCard":
-      return [...state, action.payload];
-    default:
-      throw new Error();
-  }
-}
-
 export default function Board(props) {
-  const [state, dispatch] = useReducer(reducer, []);
-
-  const { cards } = props;
+  
+  const { cards, selected, dispatch } = props;
 
   const onCardClicked = (card) => {
     console.log("onCardClicked: ", card);
 
-    const type = state.find(R.equals(card)) ? "deselectCard" : "selectCard";
-    dispatch({ type, payload: card });
+    const action = selected.find(R.equals(card)) ? "deselectCard" : "selectCard";
+    dispatch({ action, payload: card });
   };
 
   return (
@@ -33,7 +21,7 @@ export default function Board(props) {
           {...card}
           onClick={() => onCardClicked(card)}
           key={`${card.number}-${card.color}-${card.shading}-${card.shape}`}
-          selected={state.find(R.equals(card)) !== undefined}
+          selected={selected.find(R.equals(card)) !== undefined}
         />
       ))}
     </div>
