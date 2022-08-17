@@ -2,7 +2,6 @@
   display: grid;
   grid-template-columns: 7rem auto;
   grid-template-rows: 76px;
-  /* height: 76px; */
 }
 
 .header {

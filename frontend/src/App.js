@@ -15,8 +15,7 @@ const GameStates = Object.freeze({
 
 const JOIN_GAME = "join_game";
 const START_GAME = "start_game";
-const SELECT_CARD = "selectCard";
-const DESELECT_CARD = "deselectCard";
+const SUBMIT = "submit";
 
 const socketUrl = "ws://localhost:3001/ws";
 
@@ -28,10 +27,8 @@ function reducer(state, {action, payload}) {
       return {...state, ...handleJoinGame(payload) };
     case START_GAME:
       return {...state, ...handleStartGame(payload)};
-    case SELECT_CARD:
-      return {...state, selected: [...state.selected, payload]}
-    case DESELECT_CARD:
-      return {...state, selected: R.without([payload], state.selected)}
+    case SUBMIT:
+      return {...state, ...handleSubmit(state, payload)};
     default:
       throw new Error();
   }
@@ -60,11 +57,42 @@ function handleStartGame({ success, game, error }) {
   }
 }
 
+function handleSubmit(state, { success, game, error }) {
+
+  function updateBoard() {
+    const cardsToRemove = R.difference(state.board, game.board);
+    const cardsToAdd = R.difference(game.board, state.board);
+
+    return R.concat(state.board.map((card) => 
+      cardsToRemove.find(R.equals(card)) ? cardsToAdd.shift() : card
+    ), cardsToAdd);
+  }
+
+  if (success) {
+    return {
+      players: game.players,
+      board: updateBoard(),
+    }
+  }
+  else {
+    return {}
+  }
+}
+
+const getSubmitMessage = (cards) => {
+  return {
+    action: SUBMIT,
+    payload: {
+      player: playerName,
+      cards
+    }
+  }
+};
+
 function App() {
   const [state, dispatch] = useReducer(reducer, {
     board: [],
     players: [],
-    selected: [],
     gameState: GameStates.WAITING_TO_CONNECT,
   })
 
@@ -72,11 +100,12 @@ function App() {
     socketUrl,
     {
       onOpen: () => {
-        console.log("[useWebsocket:onOpen]");
+        console.log("[App:useWebsocket:onOpen]");
       },
       onMessage: () => {
-        console.log("[useWebsocket:onMessage]");
+        console.log("[App:useWebsocket:onMessage]");
       },
+      share: true,
     }
   );
 
@@ -127,7 +156,7 @@ function App() {
           <button onClick={onClickStartGame}>start game</button>
         )}
         {state.gameState === GameStates.IN_PROGRESS && (
-          <Board cards={state.board} selected={state.selected} dispatch={dispatch} />
+          <Board cards={state.board} submit={getSubmitMessage} lastMessage={lastJsonMessage} />
         )}
       </main>
     </div>
