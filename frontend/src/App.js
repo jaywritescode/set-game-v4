@@ -21,14 +21,14 @@ const socketUrl = "ws://localhost:3001/ws";
 
 const playerName = generate().dashed;
 
-function reducer(state, {action, payload}) {
+function reducer(state, { action, payload }) {
   switch (action) {
     case JOIN_GAME:
-      return {...state, ...handleJoinGame(payload) };
+      return { ...state, ...handleJoinGame(payload) };
     case START_GAME:
-      return {...state, ...handleStartGame(payload)};
+      return { ...state, ...handleStartGame(payload) };
     case SUBMIT:
-      return {...state, ...handleSubmit(state, payload)};
+      return { ...state, ...handleSubmit(state, payload) };
     default:
       throw new Error();
   }
@@ -45,37 +45,38 @@ function handleJoinGame({ success, game, error }) {
     console.log(error);
   }
 
-  return {...game, gameState};
+  return { ...game, gameState };
 }
 
 function handleStartGame({ success, game, error }) {
   if (success) {
-    return {...game, gameState: GameStates.IN_PROGRESS}
+    return { ...game, gameState: GameStates.IN_PROGRESS };
   } else {
     console.error(error);
-    return {gameState: GameStates.IN_PROGRESS};
+    return { gameState: GameStates.IN_PROGRESS };
   }
 }
 
 function handleSubmit(state, { success, game, error }) {
-
   function updateBoard() {
     const cardsToRemove = R.difference(state.board, game.board);
     const cardsToAdd = R.difference(game.board, state.board);
 
-    return R.concat(state.board.map((card) => 
-      cardsToRemove.find(R.equals(card)) ? cardsToAdd.shift() : card
-    ), cardsToAdd);
+    return R.concat(
+      state.board.map((card) =>
+        cardsToRemove.find(R.equals(card)) ? cardsToAdd.shift() : card
+      ),
+      cardsToAdd
+    );
   }
 
   if (success) {
     return {
       players: game.players,
       board: updateBoard(),
-    }
-  }
-  else {
-    return {}
+    };
+  } else {
+    return {};
   }
 }
 
@@ -84,9 +85,9 @@ const getSubmitMessage = (cards) => {
     action: SUBMIT,
     payload: {
       player: playerName,
-      cards
-    }
-  }
+      cards,
+    },
+  };
 };
 
 function App() {
@@ -94,7 +95,7 @@ function App() {
     board: [],
     players: [],
     gameState: GameStates.WAITING_TO_CONNECT,
-  })
+  });
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebsocket(
     socketUrl,
@@ -156,7 +157,11 @@ function App() {
           <button onClick={onClickStartGame}>start game</button>
         )}
         {state.gameState === GameStates.IN_PROGRESS && (
-          <Board cards={state.board} submit={getSubmitMessage} lastMessage={lastJsonMessage} />
+          <Board
+            cards={state.board}
+            submit={getSubmitMessage}
+            lastMessage={lastJsonMessage}
+          />
         )}
       </main>
     </div>

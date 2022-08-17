@@ -10,7 +10,7 @@ export default function Card(props) {
 
   return (
     <div
-      className={classNames(styles.card, {[styles.selected]: selected})}
+      className={classNames(styles.card, { [styles.selected]: selected })}
       style={{ backgroundImage: `url(/cards/${imageName}.png)` }}
       onClick={onClick}
     />
