@@ -26,6 +26,10 @@ const playerName = generate().dashed;
 
 function reducer(state, { action, payload }) {
   switch (action) {
+    case 'connect':
+      return { ...state, isConnected: true };
+    case 'disconnect':
+      return { ...state, isConnected: false };
     case JOIN_GAME:
       return { ...state, ...handleJoinGame(payload) };
     case START_GAME:
@@ -95,6 +99,7 @@ const getSubmitMessage = (cards) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, {
+    isConnected: false,
     board: [],
     players: [],
     gameState: GameStates.WAITING_TO_CONNECT,
@@ -132,10 +137,12 @@ function App() {
           "[connectionEstablished] connection is in state ",
           readyState
         );
+        dispatch({ action: 'disconnect' });
         return;
       }
 
       console.log("[connectionEstablished] connection is open");
+      dispatch({ action: 'connect' })
       sendJsonMessage({
         action: JOIN_GAME,
         payload: { name: playerName },

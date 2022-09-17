@@ -42,7 +42,7 @@ export default function Board(props) {
 
   useEffect(
     function resetSelected() {
-      if (lastMessage.action === "submit" && lastMessage.payload.success) {
+      if (lastMessage?.action === "submit" && lastMessage?.payload.success) {
         setSelected([]);
       }
     },
