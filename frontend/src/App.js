@@ -2,6 +2,9 @@ import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import generate from "project-name-generator";
 import * as R from "ramda";
+import Button from "react-bootstrap/Button";
+
+
 import "./App.css";
 import Players from "./components/Players";
 import Board from "./components/Board";
@@ -154,7 +157,7 @@ function App() {
         <Players players={state.players} myself={playerName} />
 
         {state.gameState === GameStates.WAITING_TO_START && (
-          <button onClick={onClickStartGame}>start game</button>
+          <Button onClick={onClickStartGame}>start game</Button>
         )}
         {state.gameState === GameStates.IN_PROGRESS && (
           <Board
