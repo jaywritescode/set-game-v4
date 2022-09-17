@@ -1,6 +1,5 @@
 import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
-import generate from "project-name-generator";
 import * as R from "ramda";
 import Button from "react-bootstrap/Button";
 
@@ -8,6 +7,7 @@ import Button from "react-bootstrap/Button";
 import "./App.css";
 import Players from "./components/Players";
 import Board from "./components/Board";
+import PlayerNameForm from "./components/PlayerNameForm";
 
 const GameStates = Object.freeze({
   WAITING_TO_CONNECT: 0,
@@ -21,8 +21,6 @@ const START_GAME = "start_game";
 const SUBMIT = "submit";
 
 const socketUrl = "ws://localhost:3001/ws";
-
-const playerName = generate().dashed;
 
 function reducer(state, { action, payload }) {
   switch (action) {
@@ -87,11 +85,11 @@ function handleSubmit(state, { success, game, error }) {
   }
 }
 
-const getSubmitMessage = (cards) => {
+const getSubmitMessage = (player, cards) => {
   return {
     action: SUBMIT,
     payload: {
-      player: playerName,
+      player,
       cards,
     },
   };
@@ -102,6 +100,7 @@ function App() {
     isConnected: false,
     board: [],
     players: [],
+    playerName: null,
     gameState: GameStates.WAITING_TO_CONNECT,
   });
 
@@ -144,8 +143,8 @@ function App() {
       console.log("[connectionEstablished] connection is open");
       dispatch({ action: 'connect' })
       sendJsonMessage({
-        action: JOIN_GAME,
-        payload: { name: playerName },
+        action: 'fetch_game',
+        payload: { },
       });
     },
     [readyState, sendJsonMessage]
@@ -161,7 +160,9 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
-        <Players players={state.players} myself={playerName} />
+        <PlayerNameForm />
+
+        <Players players={state.players} myself={state.playerName} />
 
         {state.gameState === GameStates.WAITING_TO_START && (
           <Button onClick={onClickStartGame}>start game</Button>
