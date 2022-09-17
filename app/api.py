@@ -82,7 +82,9 @@ class GameApi(WebSocketEndpoint):
         action = message["action"]
 
         try:
-            if action == "join_game":
+            if action == "fetch_game":
+                result = self.handle_fetch_game()
+            elif action == "join_game":
                 result = self.handle_join_game(
                     JoinGameRequestSchema().load(message["payload"])
                 )
@@ -101,6 +103,9 @@ class GameApi(WebSocketEndpoint):
     async def on_disconnect(self, websocket, close_code):
         await super().on_disconnect(websocket, close_code)
         self.connections.disconnect(websocket)
+
+    def handle_fetch_game(self):
+        return ResponseSchema().dump({"success": True, "game": self.game})
 
     #############################################
     # join game
