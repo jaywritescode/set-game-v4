@@ -28,6 +28,7 @@ function reducer(state, { action, payload }) {
       return { ...state, isConnected: true };
     case 'disconnect':
       return { ...state, isConnected: false };
+    case 'fetch_game':
     case JOIN_GAME:
       return { ...state, ...handleJoinGame(payload) };
     case START_GAME:
