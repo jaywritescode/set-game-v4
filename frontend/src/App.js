@@ -28,6 +28,8 @@ function reducer(state, { action, payload }) {
       return { ...state, isConnected: true };
     case 'disconnect':
       return { ...state, isConnected: false };
+    case 'set_name':
+      return { ...state, playerName: payload.name };
     case 'fetch_game':
     case JOIN_GAME:
       return { ...state, ...handleJoinGame(payload) };
@@ -151,6 +153,18 @@ function App() {
     [readyState, sendJsonMessage]
   );
 
+  const onClickJoinGame = (name) => {
+    dispatch({ action: 'set_name', payload: {
+      name
+    }});
+    sendJsonMessage({
+      action: JOIN_GAME,
+      payload: {
+        name
+      }
+    });
+  }
+
   const onClickStartGame = () => {
     sendJsonMessage({
       action: START_GAME,
@@ -161,7 +175,7 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
-        <PlayerNameForm />
+        {!state.playerName && <PlayerNameForm onClickJoinGame={onClickJoinGame} />}
 
         <Players players={state.players} myself={state.playerName} />
 
