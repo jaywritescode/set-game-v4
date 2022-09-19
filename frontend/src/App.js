@@ -179,7 +179,7 @@ function App() {
 
         <Players players={state.players} myself={state.playerName} />
 
-        {state.gameState === GameStates.WAITING_TO_START && (
+        {state.playerName && state.gameState === GameStates.WAITING_TO_START && (
           <Button onClick={onClickStartGame}>start game</Button>
         )}
         {state.gameState === GameStates.IN_PROGRESS && (
