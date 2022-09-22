@@ -31,6 +31,7 @@ function reducer(state, { action, payload }) {
     case 'set_name':
       return { ...state, playerName: payload.name };
     case 'fetch_game':
+      return { ...state, ...handleFetchGame(payload) };
     case JOIN_GAME:
       return { ...state, ...handleJoinGame(payload) };
     case START_GAME:
@@ -40,6 +41,20 @@ function reducer(state, { action, payload }) {
     default:
       throw new Error();
   }
+}
+
+function handleFetchGame({ success, game, error }) {
+  const gameState = R.cond([
+    [R.always(game.game_over), R.always(GameStates.GAME_OVER)],
+    [() => R.isEmpty(game.board), R.always(GameStates.WAITING_TO_START)],
+    [R.T, R.always(GameStates.IN_PROGRESS)],
+  ])();
+
+  if (error) {
+    console.log(error);
+  }
+
+  return { ...game, gameState };
 }
 
 function handleJoinGame({ success, game, error }) {
@@ -53,7 +68,7 @@ function handleJoinGame({ success, game, error }) {
     console.log(error);
   }
 
-  return { ...game, gameState };
+  return { ...game, gameState, isJoined: success };
 }
 
 function handleStartGame({ success, game, error }) {
@@ -101,6 +116,7 @@ const getSubmitMessage = (player, cards) => {
 function App() {
   const [state, dispatch] = useReducer(reducer, {
     isConnected: false,
+    isJoined: false,
     board: [],
     players: [],
     playerName: null,
@@ -179,7 +195,7 @@ function App() {
 
         <Players players={state.players} myself={state.playerName} />
 
-        {state.playerName && state.gameState === GameStates.WAITING_TO_START && (
+        {state.isJoined && state.gameState === GameStates.WAITING_TO_START && (
           <Button onClick={onClickStartGame}>start game</Button>
         )}
         {state.gameState === GameStates.IN_PROGRESS && (
