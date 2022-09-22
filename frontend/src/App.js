@@ -201,6 +201,7 @@ function App() {
         {state.gameState === GameStates.IN_PROGRESS && (
           <Board
             cards={state.board}
+            isJoined={state.isJoined}
             submit={getSubmitMessage}
             lastMessage={lastJsonMessage}
           />

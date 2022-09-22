@@ -7,7 +7,7 @@ import * as R from "ramda";
 const socketUrl = "ws://localhost:3001/ws";
 
 export default function Board(props) {
-  const { cards, lastMessage, submit } = props;
+  const { cards, isJoined, lastMessage, submit } = props;
 
   const [selected, setSelected] = useState([]);
 
@@ -23,6 +23,10 @@ export default function Board(props) {
 
   const onCardClicked = (card) => {
     console.log("onCardClicked: ", card);
+
+    if (!isJoined) {
+      return;
+    }
 
     if (selected.find(R.equals(card))) {
       setSelected(R.without([card], selected));
