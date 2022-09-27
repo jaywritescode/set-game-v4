@@ -3,7 +3,6 @@ import useWebsocket, { ReadyState } from "react-use-websocket";
 import * as R from "ramda";
 import Button from "react-bootstrap/Button";
 
-
 import "./App.css";
 import Players from "./components/Players";
 import Board from "./components/Board";
@@ -202,7 +201,7 @@ function App() {
           <Board
             cards={state.board}
             isJoined={state.isJoined}
-            submit={getSubmitMessage}
+            submit={R.partial(getSubmitMessage, [state.playerName])}
             lastMessage={lastJsonMessage}
           />
         )}
