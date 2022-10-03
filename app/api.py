@@ -42,13 +42,20 @@ SubmitRequestSchema = Schema.from_dict(
 )
 
 
-ResponseSchema = Schema.from_dict(
+GameResponseSchema = Schema.from_dict(
     {
         "success": fields.Boolean(),
         "game": fields.Nested(GameSchema),
         "error": fields.Str(),
     }
 )
+
+JoinGameResponseSchema = Schema.from_dict({
+    "success": fields.Boolean(),
+    "name": fields.Str(),
+    "players": fields.Dict(keys=fields.Str(), values=fields.List(fields.List(fields.Nested(CardSchema)))),
+    "error": fields.Str(),
+})
 
 
 class GameApi(WebSocketEndpoint):
@@ -95,7 +102,7 @@ class GameApi(WebSocketEndpoint):
                     SubmitRequestSchema().load(message["payload"])
                 )
         except ValidationError as e:
-            result = ResponseSchema().dump({"success": False, "error": e})
+            result = GameResponseSchema().dump({"success": False, "error": e})
 
         result = schema.load({"action": action, "payload": result})
         await self.connections.broadcast(result)
@@ -105,23 +112,25 @@ class GameApi(WebSocketEndpoint):
         self.connections.disconnect(websocket)
 
     def handle_fetch_game(self):
-        return ResponseSchema().dump({"success": True, "game": self.game})
+        return GameResponseSchema().dump({"success": True, "game": self.game})
 
     #############################################
     # join game
     #############################################
     def handle_join_game(self, request):
         """Handles a request to join the game.
-
+        
         :param request: the request
         :returns json: an outgoing message with the result
         """
-        if len(self.game.players) >= MAX_PLAYERS:
-            return ResponseSchema().dump({"success": False, "game": self.game, "error": "too many players"})
+        name = request["name"]
 
-        # TODO: don't assume that two players won't have the same name
-        self.add_player(request["name"])
-        return ResponseSchema().dump({"success": True, "game": self.game})
+        if len(self.game.players) >= MAX_PLAYERS:
+            return JoinGameResponseSchema().dump({"success": False, "name": name, "error": "too many players"})
+
+        self.add_player(name)
+        return JoinGameResponseSchema().dump({"success": True, "name": name, "players": self.game.players})
+
 
     def add_player(self, name):
         self.game.add_player(name)
@@ -132,9 +141,9 @@ class GameApi(WebSocketEndpoint):
     def handle_start_game(self):
         try:
             self.game.start()
-            return ResponseSchema().dump({"success": True, "game": self.game})
+            return GameResponseSchema().dump({"success": True, "game": self.game})
         except RuntimeError as e:
-            return ResponseSchema().dump({"success": False, "error": e})
+            return GameResponseSchema().dump({"success": False, "error": e})
 
     #############################################
     # submit
@@ -148,9 +157,9 @@ class GameApi(WebSocketEndpoint):
                 raise RuntimeError(f"player {player} has not joined game")
 
             if self.submit(cards, player):
-                return ResponseSchema().dump({"success": True, "game": self.game})
+                return GameResponseSchema().dump({"success": True, "game": self.game})
             else:
-                return ResponseSchema().dump(
+                return GameResponseSchema().dump(
                     {
                         "success": False,
                         "game": self.game,
@@ -158,7 +167,7 @@ class GameApi(WebSocketEndpoint):
                     }
                 )
         except RuntimeError as e:
-            return ResponseSchema().dump({"success": False, "error": e})
+            return GameResponseSchema().dump({"success": False, "error": e})
 
     def submit(self, cards, player):
         return self.game.handle_player_finds_set(cards, player=player)

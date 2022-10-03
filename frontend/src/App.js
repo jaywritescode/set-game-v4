@@ -2,6 +2,9 @@ import { useEffect, useReducer } from "react";
 import useWebsocket, { ReadyState } from "react-use-websocket";
 import * as R from "ramda";
 import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
 
 import "./App.css";
 import Players from "./components/Players";
@@ -32,7 +35,7 @@ function reducer(state, { action, payload }) {
     case 'fetch_game':
       return { ...state, ...handleFetchGame(payload) };
     case JOIN_GAME:
-      return { ...state, ...handleJoinGame(payload) };
+      return { ...state, ...handleJoinGame(state, payload) };
     case START_GAME:
       return { ...state, ...handleStartGame(payload) };
     case SUBMIT:
@@ -56,18 +59,14 @@ function handleFetchGame({ success, game, error }) {
   return { ...game, gameState };
 }
 
-function handleJoinGame({ success, game, error }) {
-  const gameState = R.cond([
-    [R.always(game.game_over), R.always(GameStates.GAME_OVER)],
-    [() => R.isEmpty(game.board), R.always(GameStates.WAITING_TO_START)],
-    [R.T, R.always(GameStates.IN_PROGRESS)],
-  ])();
-
+function handleJoinGame(state, { success, name, players, error }) {
   if (error) {
     console.log(error);
   }
 
-  return { ...game, gameState, isJoined: success };
+  const isJoined = success && name === state.playerName;
+
+  return { players, isJoined };
 }
 
 function handleStartGame({ success, game, error }) {
@@ -190,21 +189,29 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
-        {!state.playerName && <PlayerNameForm onClickJoinGame={onClickJoinGame} />}
-
-        <Players players={state.players} myself={state.playerName} />
-
-        {state.isJoined && state.gameState === GameStates.WAITING_TO_START && (
-          <Button onClick={onClickStartGame}>start game</Button>
-        )}
-        {state.gameState === GameStates.IN_PROGRESS && (
-          <Board
-            cards={state.board}
-            isJoined={state.isJoined}
-            submit={R.partial(getSubmitMessage, [state.playerName])}
-            lastMessage={lastJsonMessage}
-          />
-        )}
+        <Container>
+          <Row xs={1} md={2}>
+            <Col>
+              {!state.playerName && <PlayerNameForm onClickJoinGame={onClickJoinGame} />}
+              
+              <Players players={state.players} myself={state.playerName} />
+            </Col>
+            <Col>
+              {state.isJoined && state.gameState === GameStates.WAITING_TO_START && (
+                          <Button onClick={onClickStartGame}>start game</Button>
+              )}
+              {state.gameState === GameStates.IN_PROGRESS && (
+                <Board
+                  cards={state.board}
+                  isJoined={state.isJoined}
+                  submit={R.partial(getSubmitMessage, [state.playerName])}
+                  lastMessage={lastJsonMessage}
+                />
+              )}    
+            </Col>
+          </Row>
+        </Container>
+        
       </main>
     </div>
   );
