@@ -11,13 +11,6 @@ import Players from "./components/Players";
 import Board from "./components/Board";
 import PlayerNameForm from "./components/PlayerNameForm";
 
-const GameStates = Object.freeze({
-  WAITING_TO_CONNECT: 0,
-  WAITING_TO_START: 1,
-  IN_PROGRESS: 2,
-  GAME_OVER: 3,
-});
-
 const JOIN_GAME = "join_game";
 const START_GAME = "start_game";
 const SUBMIT = "submit";
@@ -46,35 +39,39 @@ function reducer(state, { action, payload }) {
 }
 
 function handleFetchGame({ success, game, error }) {
-  const gameState = R.cond([
-    [R.always(game.game_over), R.always(GameStates.GAME_OVER)],
-    [() => R.isEmpty(game.board), R.always(GameStates.WAITING_TO_START)],
-    [R.T, R.always(GameStates.IN_PROGRESS)],
-  ])();
-
+  console.group('handleFetchGame');
   if (error) {
     console.log(error);
   }
 
-  return { ...game, gameState };
+  console.groupEnd();
+  return { game };
 }
 
 function handleJoinGame(state, { success, name, players, error }) {
+  console.group('handleJoinGame');
+
   if (error) {
     console.log(error);
   }
 
   const isJoined = success && name === state.playerName;
 
+  console.groupEnd();
   return { players, isJoined };
 }
 
 function handleStartGame({ success, game, error }) {
+  console.group('handleStartGame');
+  console.log(success);
+  console.log(game);
   if (success) {
-    return { ...game, gameState: GameStates.IN_PROGRESS };
+    console.groupEnd();
+    return { game };
   } else {
     console.error(error);
-    return { gameState: GameStates.IN_PROGRESS };
+    console.groupEnd();
+    return { error };
   }
 }
 
@@ -118,7 +115,6 @@ function App() {
     board: [],
     players: [],
     playerName: null,
-    gameState: GameStates.WAITING_TO_CONNECT,
   });
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebsocket(
