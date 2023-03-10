@@ -185,29 +185,19 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
-        <Container>
-          <Row xs={1} md={2}>
-            <Col>
-              {!state.playerName && <PlayerNameForm onClickJoinGame={onClickJoinGame} />}
-              
-              <Players players={state.players} myself={state.playerName} />
-            </Col>
-            <Col>
-              {state.isJoined && state.gameState === GameStates.WAITING_TO_START && (
-                          <Button onClick={onClickStartGame}>start game</Button>
-              )}
-              {state.gameState === GameStates.IN_PROGRESS && (
-                <Board
-                  cards={state.board}
-                  isJoined={state.isJoined}
-                  submit={R.partial(getSubmitMessage, [state.playerName])}
-                  lastMessage={lastJsonMessage}
-                />
-              )}    
-            </Col>
-          </Row>
-        </Container>
-        
+        {!state.playerName && <PlayerNameForm onSubmit={onClickJoinGame} />}
+        <Players players={state.players} myself={state.playerName} />
+
+        {state.isJoined && !state.game.board.length && (<Button onClick={onClickStartGame}>start game</Button>)}
+
+        {state.game.board.length && (
+          <Board
+            cards={state.game.board}
+            isJoined={state.isJoined}
+            submit={R.partial(getSubmitMessage, [state.playerName])}
+            lastMessage={lastJsonMessage}
+          />
+        )}
       </main>
     </div>
   );

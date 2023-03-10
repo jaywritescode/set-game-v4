@@ -5,7 +5,7 @@ import Stack from 'react-bootstrap/Stack';
 
 export default function PlayerNameForm(props) {
 
-  const { onClickJoinGame } = props;
+  const { onSubmit } = props;
 
   const [name, setName] = useState('');
 
@@ -15,7 +15,7 @@ export default function PlayerNameForm(props) {
         type="text" 
         placeholder="Your name..."
         onChange={(e) => setName(e.currentTarget.value)} />
-      <Button variant="primary" onClick={() => onClickJoinGame(name)}>Join Game</Button>
+      <Button variant="primary" onClick={() => onSubmit(name)}>Join Game</Button>
     </Stack>
   );
 }
